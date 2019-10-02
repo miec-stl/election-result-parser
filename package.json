@@ -1,0 +1,11 @@
+{
+  "name": "election-result-parser",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/miec-stl/election-result-parser",
+  "license": "MIT",
+  "dependencies": {
+    "pdf-parse": "gitlab:renodubois/pdf-parse",
+    "pdfjs-dist": "^2.0.943"
+  }
+}

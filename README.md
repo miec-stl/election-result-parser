@@ -10,7 +10,7 @@ The utilty is written in JavaScript, and can be run by using [Node.js](https://n
 
 Once you've got a working version of node installed (you can verify this by running `node --version` on the command line), you can run the program using the following command:
 
-```bash
+```shell
 node index.js /path/to/pdf/file
 ```
 
@@ -22,7 +22,7 @@ node index.js results.pdf > parsed_results.json
 
 ## Contributions
 
-Contributions are welcome for this project! Please check the [Issues Page]() first to see if the feature or bug you're planning on working on is already in progress. Feel free to open an issue to gauge interest in a potential feature as well!
+Contributions are welcome for this project! Please check the [Issues Page](https://github.com/miec-stl/election-result-parser/issues) first to see if the feature or bug you're planning on working on is already in progress. Feel free to open an issue to gauge interest in a potential feature as well!
 
 We use Prettier for file formatting - settings for the project should be set in the `package.json`, so all need to do is install a [Prettier plugin](https://prettier.io/) for your development environment.
 

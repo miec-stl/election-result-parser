@@ -1,5 +1,7 @@
 const { loadAndParsePDF } = require("./parser");
 
+const NUM_OF_WARDS = 28
+
 const parseSubHeader = (rawSubHeader, dataOrder) => {
 	const subHeaderData = {};
 	const splitSubHeader = rawSubHeader.split(/\s+/);
@@ -123,13 +125,49 @@ const parseRace = (splitFile, targetRace, nextRace) => {
 	return returnData;
 };
 
-(async () => {
+const loadPdfFromArgs = async () => {
 	const fileName = process.argv[2];
 	if (!fileName) {
 		console.log("Usage: index [filename]");
-		return;
+		return false;
 	}
 	const parsedFile = await loadAndParsePDF(fileName);
+	return parsedFile;
+}
+
+const splitWardFile = async () => {
+	const parsedFile = await loadPdfFromArgs();
+	if (!parsedFile) {
+		console.log("no parsed file");
+		return;
+	}	
+	for (let i = 1; i <= NUM_OF_WARDS ; i++) {
+		console.log(`Ward ${i}`);
+		// Find the first instance of the string "WARD ${i}"
+		const currentWardStart = parsedFile.findIndex((line) => line.includes(`WARD ${i}`));
+		let nextWardStart = parsedFile.length;
+		if (i + 1 <= NUM_OF_WARDS) {
+			nextWardStart = parsedFile.findIndex((line) => line.includes(`WARD ${i+1}`)) - 4;
+			if (nextWardStart < 0) {
+				throw new Error("COULDN'T FIND NEXT WARD");
+			}
+		}
+		if (currentWardStart >= 0) {
+			console.log("Current Ward Start", currentWardStart);
+			console.log("Next Ward Start", nextWardStart+3);
+			const wardResults = parsedFile.splice(currentWardStart-4, nextWardStart);
+			console.log(wardResults[wardResults.length-1]);
+		} else {
+			console.log("NO WARD FOUND");
+		}
+	}
+}
+
+const processFile = async () => {
+	const parsedFile = loadPdfFromArgs();
+	if (!parsedFile) {
+		return;
+	}
 	// The first 10 lines are the main header
 	const headerData = parseHeaderData(parsedFile.slice(0, 10));
 	const noHeaderFile = removeHeaders(parsedFile);
@@ -144,4 +182,7 @@ const parseRace = (splitFile, targetRace, nextRace) => {
 	}
 	headerData.results = raceData;
 	console.log(JSON.stringify(headerData));
-})();
+};
+
+//processFile();
+splitWardFile();

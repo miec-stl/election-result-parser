@@ -10,7 +10,7 @@ const GetCallInfo = (StringFromPDF) => {
         CategoryIndex = StringFromPDF.indexOf(CALL_CATEGORIES[i]);
         if (CategoryIndex != -1) {
             LocationIndex = CategoryIndex + CALL_CATEGORIES[i].length;
-            ReturnObject['Category'] = StringFromPDF.substring(CategoryIndex, LocationIndex);
+            ReturnObject['Category'] = StringFromPDF.substring(CategoryIndex, LocationIndex).trim();
             break;
         }
     }
@@ -18,16 +18,16 @@ const GetCallInfo = (StringFromPDF) => {
     for (i = 0; i < CALL_TYPES.length; i++) {
         CallTypeIndex = StringFromPDF.indexOf(CALL_TYPES[i]);
         if(CallTypeIndex != -1) {
-            ReturnObject['CallType'] = StringFromPDF.substring(CallTypeIndex);
+            ReturnObject['CallType'] = StringFromPDF.substring(CallTypeIndex).trim();
             break;
         }
     } 
 
     if (LocationIndex !== 0) {
         if (CallTypeIndex == -1) {
-            ReturnObject['Location'] = StringFromPDF.substring(LocationIndex+3);
+            ReturnObject['Location'] = StringFromPDF.substring(LocationIndex+3).trim();
         } else {
-            ReturnObject['Location'] = StringFromPDF.substring(LocationIndex+3, CallTypeIndex);
+            ReturnObject['Location'] = StringFromPDF.substring(LocationIndex+3, CallTypeIndex).trim();
         }
     }
 
@@ -50,7 +50,7 @@ const GetCallTime = (StringFromPDF) => {
 }
 
 const GetDataRowInfo = (StringFromPDF) => {
-
+    
     const TimeString = GetCallTime(StringFromPDF);
     const CallInfoParsed = GetCallInfo(StringFromPDF);
 
@@ -71,9 +71,9 @@ const RecursivelyCheckNextRowsForData = (CompoundingRow, parsedFile, CurrentInde
         return CompoundingRow;
     } else {
         // This is another data row we want to append, let's check the next row
-        let YetAnotherRow = RecursivelyCheckNextRowsForData(CompoundingRow+" "+NextRow, parsedFile, CurrentIndex+1);
-        if (YetAnotherRow == CompoundingRow+" "+NextRow) {
-            return CompoundingRow+" "+NextRow;
+        let YetAnotherRow = RecursivelyCheckNextRowsForData(CompoundingRow.trim()+" "+NextRow.trim(), parsedFile, CurrentIndex+1);
+        if (YetAnotherRow == CompoundingRow.trim()+" "+NextRow.trim()) {
+            return CompoundingRow.trim()+" "+NextRow.trim();
         } else {
             return YetAnotherRow;
         }
@@ -95,13 +95,13 @@ const loadPdfFromArgs = async () => {
             SkippingHeader = false;
         } else if (SkippingHeader) {
             continue;
-        } else if (!SkippingHeader && Date.parse(StringFromPDF) !== NaN) {
+        } else if (!SkippingHeader && !isNaN(Date.parse(StringFromPDF))) {
             SkippingHeader = true;
         }
         
         if (!SkippingHeader && GetCallTime(StringFromPDF)) {
             let FullDataRow = RecursivelyCheckNextRowsForData(StringFromPDF, parsedFile, i);
-            ReturnFile.push(FullDataRow);
+            ReturnFile.push(FullDataRow.trim());
             // console.log(FullDataRow);
         }
     }
@@ -145,7 +145,10 @@ processFile();
 const CALL_CATEGORIES = [
     'METROLINK',
     'FACILITIES',
-    'METRO BUS ROUTE'
+    'METRO BUS ROUTE',
+    'MO GRADE CROSSINGS',
+    'IL GRADE CROSSINGS',
+    'MILE MARKERS'
 ]
 
 const CALL_TYPES = [
@@ -173,15 +176,62 @@ const CALL_TYPES = [
     'PUBLIC URINATION',
     'DRUG VIOLATION',
     'SHOTS FIRED',
-    'ASSIST',
+    'PASSENGER ASSIST',
     'INDECENT EXPOSURE',
     'SMOKING ON PROPERTY',
     'LOITERING',
     'SUSPICIOUS /UNATTENDED  PACKAGE',
+    'SUSPICIOUS /UNATTENDED PACKAGE',
     'WEAPONS VIOLATION',
     'INVESTIGATION',
     'SOLICITING',
     'ACCIDENT (BUS)',
     'COURTESY WARNING',
-    'BUS STALL',
+    'PERSON TRAPPED IN ELEVATOR',
+    'OPEN CONTAINER ALCOHOL',
+    'PROPERTY DAMAGE',
+    'FOUND PROPERTY/ARTICLE',
+    'ALARM',
+    'OBSERVATION',
+    'ABANDON VEHICLE',
+    'SUSPICIOUS VEHICLE',
+    'RESISTING',
+    'FIGHT',
+    'CHECK TRAIN FOR LOST PROPERTY',
+    'MOTORIST ASSIST',
+    'VANDALISM',
+    'CONVEYANCE',
+    'ATTEMPT ROBBERY',
+    'FIRE',
+    'STATION ASSIGNMENT',
+    'MISSING PERSON',
+    'GAMBLING',
+    'CITATION ISSUE',
+    'RECOVERED PROPERTY',
+    'ACCIDENT (CAR)',
+    'ANIMAL AT LARGE',
+    'DRINKING ON TRAIN',
+    'SUICIDAL SUBJECT',
+    'ROBBERY',
+    'CONTACT COMPLAINTANT',
+    'PANHANDLING',
+    'ACCIDENT (TRAIN)',
+    'ORDINANCE VIOLATION',
+    'POSSIBLE STOLEN VEHICLE',
+    'ASSIST',
+    'PARKING VIOLATION',
+    'FLOURISHING',
+    'UNRULY PATRON',
+    'PERSON DOWN',
+    'ACCIDENT (AGENCY VEHICLE)',
+    'STOLEN PROPERTY',
+    'ESCORT',
+    'UNFOUNDED',
+    'BICYCLE/SCOOTER REMOVAL',
+    'TOWED VEHICLE',
+    'SHOOTING',
+    'PERSON STRUCK',
+    'PEDESTRIAN CHECK',
+    'OPERATOR CONTACT',
+    'UNSECURE DOOR'
 ]

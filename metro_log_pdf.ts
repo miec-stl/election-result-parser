@@ -11,7 +11,8 @@ class DataRow {
 module.exports = class MetroLogPDF {
 
     FilePath: string;
-    ParsedPDF: string[][];
+    RawMetroFile: string[];
+    ParsedMetroData: DataRow[];
     
     constructor(FilePath: string) {
         this.FilePath = FilePath;
@@ -19,12 +20,12 @@ module.exports = class MetroLogPDF {
 
     async ReadMetroPDF() {
         if (!this.FilePath) {
-            console.log("ERROR: No filename");
+            console.error("ERROR: No filename");
             return [[]];
         }
-        const RawMetroFile: string[] = await loadAndParsePDF(this.FilePath);
-        const ParsedMetroData: DataRow[] = this.ReadAndParseMetroFile(RawMetroFile);
-        return ParsedMetroData;
+        this.RawMetroFile = await loadAndParsePDF(this.FilePath);
+        this.ParsedMetroData = this.ReadAndParseMetroFile(this.RawMetroFile);
+        return this.ParsedMetroData;
     }
 
     ReadAndParseMetroFile(MetroFile: string[]) {
@@ -34,11 +35,15 @@ module.exports = class MetroLogPDF {
     }
 
     GetDataRows(MetroFile: string[]) {
-        const ReturnObject = [];
-        
+        const ReturnObject = [];        
         for (let i = 0; i < MetroFile.length; i++) {
-            const ThisPdfRow = MetroFile[i];
-            const ParsedPdfRow: DataRow | false = this.ParsePdfString(ThisPdfRow);
+            const ThisPdfRow = MetroFile[i].trim();
+            if(!this.CheckIfDataRow(ThisPdfRow)) {
+                continue;
+            } 
+            let FullSectionString: string = this.RecursivelyCheckNextRowsForData(ThisPdfRow, i);
+            // console.error(FullSectionString);
+            const ParsedPdfRow: DataRow | false = this.ParsePdfString(FullSectionString);
             if (ParsedPdfRow !== false) {
                 ReturnObject.push(ParsedPdfRow);
             }
@@ -48,7 +53,41 @@ module.exports = class MetroLogPDF {
     }
 
     CheckIfDataRow(PdfString: string) {
-        return true;
+        let AmPmIndex: number;
+        let CategoryIndex: number;
+        AmPmIndex = PdfString.indexOf("am");
+        if (AmPmIndex == -1) { AmPmIndex = PdfString.indexOf("pm"); }
+        for (let i = 0; i < this.CALL_CATEGORIES.length; i++) {
+            CategoryIndex = PdfString.indexOf(this.CALL_CATEGORIES[i]);
+            if (CategoryIndex != -1) {
+                break;
+            }
+        }
+        if (AmPmIndex != -1 && CategoryIndex != -1) {
+            return true;
+        } else { 
+            return false;
+        }
+    }
+
+    RecursivelyCheckNextRowsForData(CompoundingString: string, CurrentIndex: number) {
+        const NextRowInFile: string = this.RawMetroFile[CurrentIndex+1].trim();
+        if (this.CheckIfDataRow(NextRowInFile)) {
+            // If next row is a data row, we're done
+            return CompoundingString;
+        } else if (!isNaN(Date.parse(NextRowInFile))) {
+            // If next row is entirely a date, that's the end of a page
+            // (this is specific to the formatting of Metro's PDFs)
+            return CompoundingString;
+        } else {
+            let CurrentCompoundedString = CompoundingString+" "+NextRowInFile;
+            let NextCompoundedString = this.RecursivelyCheckNextRowsForData(CurrentCompoundedString, CurrentIndex+1);
+            if (NextCompoundedString == CompoundingString) {
+                return CurrentCompoundedString;
+            } else {
+                return NextCompoundedString;
+            }
+        }
     }
 
     ParsePdfString(PdfString: string) {
@@ -62,15 +101,11 @@ module.exports = class MetroLogPDF {
         let CallType: string;
         let Location: string;
 
-        if (!this.CheckIfDataRow) {
-            false;
-        }
-
         // Find time information
         AmPmIndex = PdfString.indexOf("am");
         if (AmPmIndex == -1) { AmPmIndex = PdfString.indexOf("pm"); }
         if (AmPmIndex == -1) { 
-            // console.error("ERROR: No AM/PM string found: "+PdfString); 
+            console.error("ERROR: No AM/PM string found: "+PdfString); 
             return false;
         }
         DateString = PdfString.substring(0, AmPmIndex + 2);
@@ -205,7 +240,8 @@ module.exports = class MetroLogPDF {
         'PEDESTRIAN CHECK',
         'OPERATOR CONTACT',
         'UNSECURE DOOR',
-        'MEDICAL EMERGENCY'
+        'MEDICAL EMERGENCY',
+        'PLATFORM CHECK'
     ]
 
     CALL_CATEGORIES = [

@@ -38,6 +38,7 @@ var _this = this;
 var MetroLogPDF = require('./metro_log_pdf');
 var fs = require('fs');
 var ReadAllDirectoryFiles = function (DirectoryPath, EachDirectoryFunction /*, OnError: any*/) {
+    var AllFilesData = [];
     fs.readdir(DirectoryPath, function (err, FileNameArray) {
         if (err) {
             // OnError(err);

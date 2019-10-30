@@ -2,6 +2,7 @@ let MetroLogPDF = require('./metro_log_pdf');
 const fs = require('fs');
 
 const ReadAllDirectoryFiles = (DirectoryPath: string, EachDirectoryFunction: any/*, OnError: any*/) => {
+    const AllFilesData = [];
     fs.readdir(DirectoryPath, (err: any, FileNameArray: string[]) => {
         if (err) {
             // OnError(err);

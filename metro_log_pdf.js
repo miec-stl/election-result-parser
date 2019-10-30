@@ -125,7 +125,8 @@ module.exports = /** @class */ (function () {
             'PEDESTRIAN CHECK',
             'OPERATOR CONTACT',
             'UNSECURE DOOR',
-            'MEDICAL EMERGENCY'
+            'MEDICAL EMERGENCY',
+            'PLATFORM CHECK'
         ];
         this.CALL_CATEGORIES = [
             'METROLINK',
@@ -139,19 +140,20 @@ module.exports = /** @class */ (function () {
     }
     MetroLogPDF.prototype.ReadMetroPDF = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var RawMetroFile, ParsedMetroData;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
                         if (!this.FilePath) {
-                            console.log("ERROR: No filename");
+                            console.error("ERROR: No filename");
                             return [2 /*return*/, [[]]];
                         }
+                        _a = this;
                         return [4 /*yield*/, loadAndParsePDF(this.FilePath)];
                     case 1:
-                        RawMetroFile = _a.sent();
-                        ParsedMetroData = this.ReadAndParseMetroFile(RawMetroFile);
-                        return [2 /*return*/, ParsedMetroData];
+                        _a.RawMetroFile = _b.sent();
+                        this.ParsedMetroData = this.ReadAndParseMetroFile(this.RawMetroFile);
+                        return [2 /*return*/, this.ParsedMetroData];
                 }
             });
         });
@@ -164,8 +166,13 @@ module.exports = /** @class */ (function () {
     MetroLogPDF.prototype.GetDataRows = function (MetroFile) {
         var ReturnObject = [];
         for (var i = 0; i < MetroFile.length; i++) {
-            var ThisPdfRow = MetroFile[i];
-            var ParsedPdfRow = this.ParsePdfString(ThisPdfRow);
+            var ThisPdfRow = MetroFile[i].trim();
+            if (!this.CheckIfDataRow(ThisPdfRow)) {
+                continue;
+            }
+            var FullSectionString = this.RecursivelyCheckNextRowsForData(ThisPdfRow, i);
+            // console.error(FullSectionString);
+            var ParsedPdfRow = this.ParsePdfString(FullSectionString);
             if (ParsedPdfRow !== false) {
                 ReturnObject.push(ParsedPdfRow);
             }
@@ -173,7 +180,46 @@ module.exports = /** @class */ (function () {
         return ReturnObject;
     };
     MetroLogPDF.prototype.CheckIfDataRow = function (PdfString) {
-        return true;
+        var AmPmIndex;
+        var CategoryIndex;
+        AmPmIndex = PdfString.indexOf("am");
+        if (AmPmIndex == -1) {
+            AmPmIndex = PdfString.indexOf("pm");
+        }
+        for (var i = 0; i < this.CALL_CATEGORIES.length; i++) {
+            CategoryIndex = PdfString.indexOf(this.CALL_CATEGORIES[i]);
+            if (CategoryIndex != -1) {
+                break;
+            }
+        }
+        if (AmPmIndex != -1 && CategoryIndex != -1) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    };
+    MetroLogPDF.prototype.RecursivelyCheckNextRowsForData = function (CompoundingString, CurrentIndex) {
+        var NextRowInFile = this.RawMetroFile[CurrentIndex + 1].trim();
+        if (this.CheckIfDataRow(NextRowInFile)) {
+            // If next row is a data row, we're done
+            return CompoundingString;
+        }
+        else if (!isNaN(Date.parse(NextRowInFile))) {
+            // If next row is entirely a date, that's the end of a page
+            // (this is specific to the formatting of Metro's PDFs)
+            return CompoundingString;
+        }
+        else {
+            var CurrentCompoundedString = CompoundingString + " " + NextRowInFile;
+            var NextCompoundedString = this.RecursivelyCheckNextRowsForData(CurrentCompoundedString, CurrentIndex + 1);
+            if (NextCompoundedString == CompoundingString) {
+                return CurrentCompoundedString;
+            }
+            else {
+                return NextCompoundedString;
+            }
+        }
     };
     MetroLogPDF.prototype.ParsePdfString = function (PdfString) {
         var AmPmIndex;
@@ -184,16 +230,13 @@ module.exports = /** @class */ (function () {
         var Category;
         var CallType;
         var Location;
-        if (!this.CheckIfDataRow) {
-            false;
-        }
         // Find time information
         AmPmIndex = PdfString.indexOf("am");
         if (AmPmIndex == -1) {
             AmPmIndex = PdfString.indexOf("pm");
         }
         if (AmPmIndex == -1) {
-            // console.error("ERROR: No AM/PM string found: "+PdfString); 
+            console.error("ERROR: No AM/PM string found: " + PdfString);
             return false;
         }
         DateString = PdfString.substring(0, AmPmIndex + 2);

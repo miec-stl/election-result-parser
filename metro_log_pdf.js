@@ -1,3 +1,4 @@
+"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -34,7 +35,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+exports.__esModule = true;
 var loadAndParsePDF = require('./parser').loadAndParsePDF;
+var underscore_1 = require("underscore");
 var DataRow = /** @class */ (function () {
     function DataRow() {
     }
@@ -284,6 +287,17 @@ module.exports = /** @class */ (function () {
             CallType: CallType,
             Location: Location
         };
+    };
+    MetroLogPDF.prototype.CountStatisticalData = function () {
+        if (this.ParsedMetroData.length == 0) {
+            console.error("No parsed data");
+            return;
+        }
+        var CallsByType = underscore_1._.groupBy(this.ParsedMetroData, 'CallType');
+        var CountCallsByType = underscore_1._.mapObject(CallsByType, function (CallsOfThisType) {
+            return CallsOfThisType.length;
+        });
+        return CountCallsByType;
     };
     return MetroLogPDF;
 }());

@@ -38,21 +38,36 @@ var _this = this;
 var MetroLogPDF = require('./metro_log_pdf');
 var fs = require('fs');
 var ReadAllDirectoryFiles = function (DirectoryPath, EachDirectoryFunction /*, OnError: any*/) {
-    var AllFilesData = [];
+    var AllFilesData = {};
     fs.readdir(DirectoryPath, function (err, FileNameArray) {
         if (err) {
             // OnError(err);
             console.log(err);
             return;
         }
-        FileNameArray.forEach(function (FileName) {
-            // console.log(FileName);
-            EachDirectoryFunction(DirectoryPath + "/" + FileName);
-        });
+        FileNameArray.forEach(function (FileName) { return __awaiter(_this, void 0, void 0, function () {
+            var _a, _b;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        // console.log(FileName);
+                        _a = AllFilesData;
+                        _b = FileName;
+                        return [4 /*yield*/, EachDirectoryFunction(DirectoryPath + "/" + FileName)];
+                    case 1:
+                        // console.log(FileName);
+                        _a[_b] = _c.sent();
+                        if (FileName == FileNameArray[FileNameArray.length - 1]) {
+                            console.log(JSON.stringify(AllFilesData));
+                        }
+                        return [2 /*return*/];
+                }
+            });
+        }); });
     });
 };
 ReadAllDirectoryFiles('test_dir', function (FilePath) { return __awaiter(_this, void 0, void 0, function () {
-    var TestPDF, ParsedPdfData;
+    var TestPDF, ParsedPdfData, PdfStatisticalData;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -60,8 +75,10 @@ ReadAllDirectoryFiles('test_dir', function (FilePath) { return __awaiter(_this, 
                 return [4 /*yield*/, TestPDF.ReadMetroPDF()];
             case 1:
                 ParsedPdfData = _a.sent();
-                console.log(JSON.stringify(ParsedPdfData));
-                return [2 /*return*/];
+                PdfStatisticalData = TestPDF.CountStatisticalData();
+                // console.log(JSON.stringify(PdfStatisticalData));
+                // console.log(JSON.stringify(ParsedPdfData));
+                return [2 /*return*/, PdfStatisticalData];
         }
     });
 }); });

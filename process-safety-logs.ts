@@ -2,24 +2,32 @@ let MetroLogPDF = require('./metro_log_pdf');
 const fs = require('fs');
 
 const ReadAllDirectoryFiles = (DirectoryPath: string, EachDirectoryFunction: any/*, OnError: any*/) => {
-    const AllFilesData = [];
+    let AllFilesData = {};
+
     fs.readdir(DirectoryPath, (err: any, FileNameArray: string[]) => {
         if (err) {
             // OnError(err);
             console.log(err);
             return;
         }
-        FileNameArray.forEach( (FileName: string) => {
+        FileNameArray.forEach( async (FileName: string) => {
             // console.log(FileName);
-            EachDirectoryFunction(DirectoryPath+"/"+FileName);
+            AllFilesData[FileName] = await EachDirectoryFunction(DirectoryPath+"/"+FileName);
+            if (FileName == FileNameArray[FileNameArray.length - 1]) {
+                console.log(JSON.stringify(AllFilesData));
+            }
         });
     });
+    
 }
 
 
 ReadAllDirectoryFiles('test_dir', async (FilePath: string) => {
     const TestPDF = new MetroLogPDF(FilePath);
     const ParsedPdfData = await TestPDF.ReadMetroPDF();
-    console.log(JSON.stringify(ParsedPdfData));
+    const PdfStatisticalData = TestPDF.CountStatisticalData();
+    // console.log(JSON.stringify(PdfStatisticalData));
+    // console.log(JSON.stringify(ParsedPdfData));
+    return PdfStatisticalData;
 });
 

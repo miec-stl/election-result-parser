@@ -1,5 +1,6 @@
 
 let { loadAndParsePDF } = require('./parser');
+import { _ } from 'underscore';
 
 class DataRow {
     Time: Date;
@@ -155,6 +156,18 @@ module.exports = class MetroLogPDF {
             CallType: CallType,
             Location: Location
         }
+    }
+
+    CountStatisticalData() {
+        if(this.ParsedMetroData.length == 0) {
+            console.error("No parsed data");
+            return;
+        }
+        const CallsByType = _.groupBy(this.ParsedMetroData, 'CallType');
+        const CountCallsByType = _.mapObject(CallsByType, (CallsOfThisType) => {
+            return CallsOfThisType.length;
+        });
+        return CountCallsByType;
     }
 
     CALL_TYPES = [

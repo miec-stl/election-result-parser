@@ -6,7 +6,8 @@
   "license": "MIT",
   "dependencies": {
     "pdf-parse": "gitlab:renodubois/pdf-parse",
-    "pdfjs-dist": "^2.0.943"
+    "pdfjs-dist": "^2.0.943",
+    "underscore": "^1.9.1"
   },
   "devDependencies": {
     "@types/node": "^12.12.0"

@@ -35,7 +35,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 var _this = this;
-var loadAndParsePDF = require('./parser').loadAndParsePDF;
+var MetroLogPDF = require('./metro_log_pdf');
 var fs = require('fs');
 var ReadAllDirectoryFiles = function (DirectoryPath, EachDirectoryFunction /*, OnError: any*/) {
     fs.readdir(DirectoryPath, function (err, FileNameArray) {
@@ -45,27 +45,22 @@ var ReadAllDirectoryFiles = function (DirectoryPath, EachDirectoryFunction /*, O
             return;
         }
         FileNameArray.forEach(function (FileName) {
-            console.log(FileName);
+            // console.log(FileName);
             EachDirectoryFunction(DirectoryPath + "/" + FileName);
         });
     });
 };
-var ReadMetroPDF = function (FileName) { return __awaiter(_this, void 0, void 0, function () {
-    var RawMetroFile, ParsedMetroFile;
+ReadAllDirectoryFiles('test_dir', function (FilePath) { return __awaiter(_this, void 0, void 0, function () {
+    var TestPDF, ParsedPdfData;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                if (!FileName) {
-                    console.log("ERROR: No filename");
-                    return [2 /*return*/, false];
-                }
-                return [4 /*yield*/, loadAndParsePDF(FileName)];
+                TestPDF = new MetroLogPDF(FilePath);
+                return [4 /*yield*/, TestPDF.ReadMetroPDF()];
             case 1:
-                RawMetroFile = _a.sent();
-                ParsedMetroFile = console.log(RawMetroFile);
+                ParsedPdfData = _a.sent();
+                console.log(JSON.stringify(ParsedPdfData));
                 return [2 /*return*/];
         }
     });
-}); };
-ReadAllDirectoryFiles('test_dir', ReadMetroPDF);
-console.log('asdf');
+}); });

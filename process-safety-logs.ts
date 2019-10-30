@@ -1,4 +1,4 @@
-const { loadAndParsePDF } = require('./parser');
+let MetroLogPDF = require('./metro_log_pdf');
 const fs = require('fs');
 
 const ReadAllDirectoryFiles = (DirectoryPath: string, EachDirectoryFunction: any/*, OnError: any*/) => {
@@ -9,23 +9,16 @@ const ReadAllDirectoryFiles = (DirectoryPath: string, EachDirectoryFunction: any
             return;
         }
         FileNameArray.forEach( (FileName: string) => {
-            console.log(FileName);
+            // console.log(FileName);
             EachDirectoryFunction(DirectoryPath+"/"+FileName);
         });
     });
 }
 
-const ReadMetroPDF = async (FileName: string) => {
-    if (!FileName) {
-        console.log("ERROR: No filename");
-        return false;
-    }
 
-    const RawMetroFile: string[] = await loadAndParsePDF(FileName);
-    const ParsedMetroFile: string[][] = 
-    console.log(RawMetroFile);
-}
+ReadAllDirectoryFiles('test_dir', async (FilePath: string) => {
+    const TestPDF = new MetroLogPDF(FilePath);
+    const ParsedPdfData = await TestPDF.ReadMetroPDF();
+    console.log(JSON.stringify(ParsedPdfData));
+});
 
-ReadAllDirectoryFiles('test_dir', ReadMetroPDF); 
-
-console.log('asdf');

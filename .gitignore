@@ -2,3 +2,7 @@
 
 node_modules/
 *.pdf
+
+test_dir/
+input/
+output/

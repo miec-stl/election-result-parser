@@ -129,7 +129,18 @@ module.exports = /** @class */ (function () {
             'OPERATOR CONTACT',
             'UNSECURE DOOR',
             'MEDICAL EMERGENCY',
-            'PLATFORM CHECK'
+            'PLATFORM CHECK',
+            'CRIMES FROM OTHER JURISDICTION',
+            'SUPPLEMENTAL REPORT',
+            'OFFICER IN NEED OF AIDE',
+            'PROCESSING HARD DRIVE',
+            'TRANSFER CHECK',
+            'SPECIAL EVENT DETAIL',
+            'SUMMONS RELEASE',
+            'STADIUM DETAIL(NONE BASEBALL)',
+            'INSPECTION',
+            'STREET LEVEL CHECK',
+            'BOMB THREAT'
         ];
         this.CALL_CATEGORIES = [
             'METROLINK',

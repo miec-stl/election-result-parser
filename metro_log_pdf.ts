@@ -265,7 +265,12 @@ module.exports = class MetroLogPDF {
         'STADIUM DETAIL(NONE BASEBALL)',
         'INSPECTION',
         'STREET LEVEL CHECK',
-        'BOMB THREAT'
+        'BOMB THREAT',
+        'WALK OFF',
+        'JUVENILE INCUSTODY',
+        'REMOVE OBSTRUCTION',
+        'PASSENGER(S) SEPERATED',
+        'WIRES DOWN'
     ]
 
     CALL_CATEGORIES = [

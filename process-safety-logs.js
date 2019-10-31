@@ -1,3 +1,4 @@
+"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -34,50 +35,42 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var _this = this;
+exports.__esModule = true;
 var MetroLogPDF = require('./metro_log_pdf');
 var fs = require('fs');
+var underscore_1 = require("underscore");
 var ReadAllDirectoryFiles = function (DirectoryPath, EachDirectoryFunction /*, OnError: any*/) {
-    var AllFilesData = {};
-    fs.readdir(DirectoryPath, function (err, FileNameArray) {
+    var FileNameArray;
+    var FilePromises = [];
+    fs.readdir(DirectoryPath, function (err, FileNames) {
+        FileNameArray = FileNames;
         if (err) {
-            // OnError(err);
             console.log(err);
             return;
         }
-        FileNameArray.forEach(function (FileName) { return __awaiter(_this, void 0, void 0, function () {
-            var _a, _b;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
-                    case 0:
-                        // console.log(FileName);
-                        _a = AllFilesData;
-                        _b = FileName;
-                        return [4 /*yield*/, EachDirectoryFunction(DirectoryPath + "/" + FileName)];
-                    case 1:
-                        // console.log(FileName);
-                        _a[_b] = _c.sent();
-                        if (FileName == FileNameArray[FileNameArray.length - 1]) {
-                            console.log(JSON.stringify(AllFilesData));
-                        }
-                        return [2 /*return*/];
-                }
+        FileNames.forEach(function (FileName) { return __awaiter(void 0, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                FilePromises.push(new Promise(function (resolve, reject) {
+                    resolve(EachDirectoryFunction(DirectoryPath + "/" + FileName));
+                }));
+                return [2 /*return*/];
             });
         }); });
+        Promise.all(FilePromises).then(function (AllFilesData) {
+            console.log(JSON.stringify(underscore_1._.object(FileNameArray, AllFilesData)));
+        });
     });
 };
-ReadAllDirectoryFiles('test_dir', function (FilePath) { return __awaiter(_this, void 0, void 0, function () {
-    var TestPDF, ParsedPdfData, PdfStatisticalData;
+ReadAllDirectoryFiles('test_dir', function (FilePath) { return __awaiter(void 0, void 0, void 0, function () {
+    var TestPDF, PdfStatisticalData;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 TestPDF = new MetroLogPDF(FilePath);
                 return [4 /*yield*/, TestPDF.ReadMetroPDF()];
             case 1:
-                ParsedPdfData = _a.sent();
+                _a.sent();
                 PdfStatisticalData = TestPDF.CountStatisticalData();
-                // console.log(JSON.stringify(PdfStatisticalData));
-                // console.log(JSON.stringify(ParsedPdfData));
                 return [2 /*return*/, PdfStatisticalData];
         }
     });

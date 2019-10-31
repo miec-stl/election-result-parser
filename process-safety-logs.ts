@@ -1,33 +1,37 @@
 let MetroLogPDF = require('./metro_log_pdf');
 const fs = require('fs');
+import { _ } from 'underscore';
 
-const ReadAllDirectoryFiles = (DirectoryPath: string, EachDirectoryFunction: any/*, OnError: any*/) => {
-    let AllFilesData = {};
+let ReadAllDirectoryFiles = (DirectoryPath: string, EachDirectoryFunction: any/*, OnError: any*/) => {
+    let FileNameArray: string[];
+    let FilePromises: Promise<any>[] = [];
 
-    fs.readdir(DirectoryPath, (err: any, FileNameArray: string[]) => {
+
+    fs.readdir(DirectoryPath, (err: any, FileNames: string[]) => {
+        FileNameArray = FileNames;
         if (err) {
-            // OnError(err);
             console.log(err);
             return;
         }
-        FileNameArray.forEach( async (FileName: string) => {
-            // console.log(FileName);
-            AllFilesData[FileName] = await EachDirectoryFunction(DirectoryPath+"/"+FileName);
-            if (FileName == FileNameArray[FileNameArray.length - 1]) {
-                console.log(JSON.stringify(AllFilesData));
-            }
+        FileNames.forEach( async (FileName: string) => {
+            FilePromises.push(new Promise( (resolve, reject) => {
+                resolve(EachDirectoryFunction(DirectoryPath+"/"+FileName));
+            }));
         });
-    });
-    
+
+        Promise.all(FilePromises).then( (AllFilesData) => {
+            console.log(JSON.stringify(_.object(FileNameArray, AllFilesData)));
+        });
+    });    
 }
 
 
 ReadAllDirectoryFiles('test_dir', async (FilePath: string) => {
     const TestPDF = new MetroLogPDF(FilePath);
-    const ParsedPdfData = await TestPDF.ReadMetroPDF();
+    await TestPDF.ReadMetroPDF();
     const PdfStatisticalData = TestPDF.CountStatisticalData();
-    // console.log(JSON.stringify(PdfStatisticalData));
-    // console.log(JSON.stringify(ParsedPdfData));
     return PdfStatisticalData;
 });
+
+
 

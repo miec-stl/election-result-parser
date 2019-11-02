@@ -146,7 +146,11 @@ module.exports = /** @class */ (function () {
             'WALK OFF',
             'TRAIN SWEEP',
             'FOUND PROPERTY',
-            'BURGLARY'
+            'BURGLARY',
+            'WALK OFF',
+            'REMOVE OBSTRUCTION',
+            'PASSENGER(S) SEPERATED',
+            'WIRES DOWN'
         ];
         this.CALL_CATEGORIES = [
             'METROLINK',

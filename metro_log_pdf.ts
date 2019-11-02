@@ -279,7 +279,11 @@ module.exports = class MetroLogPDF {
         'WALK OFF',
         'TRAIN SWEEP',
         'FOUND PROPERTY',
-        'BURGLARY'
+        'BURGLARY',
+        'WALK OFF',
+        'REMOVE OBSTRUCTION',
+        'PASSENGER(S) SEPERATED',
+        'WIRES DOWN'
     ]
 
     CALL_CATEGORIES = [

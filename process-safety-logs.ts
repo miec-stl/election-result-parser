@@ -20,17 +20,17 @@ let ReadAllDirectoryFiles = (DirectoryPath: string, EachDirectoryFunction: any/*
         });
 
         Promise.all(FilePromises).then( (AllFilesData) => {
-            console.log(JSON.stringify(_.object(FileNameArray, AllFilesData)));
+            console.log(JSON.stringify(_.union(AllFilesData)));
         });
     });    
 }
 
 
-ReadAllDirectoryFiles('test_dir', async (FilePath: string) => {
+ReadAllDirectoryFiles('input_2017', async (FilePath: string) => {
     const TestPDF = new MetroLogPDF(FilePath);
-    await TestPDF.ReadMetroPDF();
+    const AllRows = await TestPDF.ReadMetroPDF();
     const PdfStatisticalData = TestPDF.CountStatisticalData();
-    return PdfStatisticalData;
+    return AllRows;
 });
 
 

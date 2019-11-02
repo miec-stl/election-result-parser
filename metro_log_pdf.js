@@ -140,7 +140,13 @@ module.exports = /** @class */ (function () {
             'STADIUM DETAIL(NONE BASEBALL)',
             'INSPECTION',
             'STREET LEVEL CHECK',
-            'BOMB THREAT'
+            'BOMB THREAT',
+            'NO FARE',
+            'JUVENILE INCUSTODY',
+            'WALK OFF',
+            'TRAIN SWEEP',
+            'FOUND PROPERTY',
+            'BURGLARY'
         ];
         this.CALL_CATEGORIES = [
             'METROLINK',
@@ -182,6 +188,7 @@ module.exports = /** @class */ (function () {
         for (var i = 0; i < MetroFile.length; i++) {
             var ThisPdfRow = MetroFile[i].trim();
             if (!this.CheckIfDataRow(ThisPdfRow)) {
+                // console.error(ThisPdfRow);
                 continue;
             }
             var FullSectionString = this.RecursivelyCheckNextRowsForData(ThisPdfRow, i);
@@ -225,7 +232,15 @@ module.exports = /** @class */ (function () {
             return CompoundingString;
         }
         else {
-            var CurrentCompoundedString = CompoundingString + " " + NextRowInFile;
+            var CurrentCompoundedString = void 0;
+            // Some logs from 2017 were doing weird stuff, this is to handle those:
+            if (NextRowInFile.length < 6 || underscore_1._.contains(['URBANCE', 'RTICLE', 'ENTAL INJURY'], NextRowInFile)) {
+                CompoundingString = CompoundingString.trim();
+                CurrentCompoundedString = CompoundingString + NextRowInFile;
+            }
+            else {
+                CurrentCompoundedString = CompoundingString + " " + NextRowInFile;
+            }
             var NextCompoundedString = this.RecursivelyCheckNextRowsForData(CurrentCompoundedString, CurrentIndex + 1);
             if (NextCompoundedString == CompoundingString) {
                 return CurrentCompoundedString;
@@ -301,7 +316,7 @@ module.exports = /** @class */ (function () {
     };
     MetroLogPDF.prototype.CountStatisticalData = function () {
         if (this.ParsedMetroData.length == 0) {
-            console.error("No parsed data");
+            console.error("No parsed data: " + this.FilePath);
             return;
         }
         var CallsByType = underscore_1._.groupBy(this.ParsedMetroData, 'CallType');

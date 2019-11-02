@@ -57,21 +57,21 @@ var ReadAllDirectoryFiles = function (DirectoryPath, EachDirectoryFunction /*, O
             });
         }); });
         Promise.all(FilePromises).then(function (AllFilesData) {
-            console.log(JSON.stringify(underscore_1._.object(FileNameArray, AllFilesData)));
+            console.log(JSON.stringify(underscore_1._.union(AllFilesData)));
         });
     });
 };
-ReadAllDirectoryFiles('test_dir', function (FilePath) { return __awaiter(void 0, void 0, void 0, function () {
-    var TestPDF, PdfStatisticalData;
+ReadAllDirectoryFiles('input_2017', function (FilePath) { return __awaiter(void 0, void 0, void 0, function () {
+    var TestPDF, AllRows, PdfStatisticalData;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 TestPDF = new MetroLogPDF(FilePath);
                 return [4 /*yield*/, TestPDF.ReadMetroPDF()];
             case 1:
-                _a.sent();
+                AllRows = _a.sent();
                 PdfStatisticalData = TestPDF.CountStatisticalData();
-                return [2 /*return*/, PdfStatisticalData];
+                return [2 /*return*/, AllRows];
         }
     });
 }); });

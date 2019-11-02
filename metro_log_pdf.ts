@@ -40,8 +40,9 @@ module.exports = class MetroLogPDF {
         for (let i = 0; i < MetroFile.length; i++) {
             const ThisPdfRow = MetroFile[i].trim();
             if(!this.CheckIfDataRow(ThisPdfRow)) {
+                // console.error(ThisPdfRow);
                 continue;
-            } 
+            }
             let FullSectionString: string = this.RecursivelyCheckNextRowsForData(ThisPdfRow, i);
             // console.error(FullSectionString);
             const ParsedPdfRow: DataRow | false = this.ParsePdfString(FullSectionString);
@@ -81,7 +82,14 @@ module.exports = class MetroLogPDF {
             // (this is specific to the formatting of Metro's PDFs)
             return CompoundingString;
         } else {
-            let CurrentCompoundedString = CompoundingString+" "+NextRowInFile;
+            let CurrentCompoundedString;
+            // Some logs from 2017 were doing weird stuff, this is to handle those:
+            if (NextRowInFile.length < 6 || _.contains(['URBANCE', 'RTICLE', 'ENTAL INJURY'], NextRowInFile)) {
+                CompoundingString = CompoundingString.trim();
+                CurrentCompoundedString = CompoundingString+NextRowInFile;
+            } else {
+                CurrentCompoundedString = CompoundingString+" "+NextRowInFile;
+            }
             let NextCompoundedString = this.RecursivelyCheckNextRowsForData(CurrentCompoundedString, CurrentIndex+1);
             if (NextCompoundedString == CompoundingString) {
                 return CurrentCompoundedString;
@@ -160,7 +168,7 @@ module.exports = class MetroLogPDF {
 
     CountStatisticalData() {
         if(this.ParsedMetroData.length == 0) {
-            console.error("No parsed data");
+            console.error("No parsed data: "+this.FilePath);
             return;
         }
         const CallsByType = _.groupBy(this.ParsedMetroData, 'CallType');
@@ -265,7 +273,13 @@ module.exports = class MetroLogPDF {
         'STADIUM DETAIL(NONE BASEBALL)',
         'INSPECTION',
         'STREET LEVEL CHECK',
-        'BOMB THREAT'
+        'BOMB THREAT',
+        'NO FARE',
+        'JUVENILE INCUSTODY',
+        'WALK OFF',
+        'TRAIN SWEEP',
+        'FOUND PROPERTY',
+        'BURGLARY'
     ]
 
     CALL_CATEGORIES = [

@@ -89,8 +89,10 @@ const parseRace = (splitFile, targetRace, nextRace) => {
 	stats.forEach((line, index) => {
 		switch (index) {
 			case 2:
+				// There are some cases where this doesn't get captured because of an error on the PDF parsing side.
+				// TODO: Figure out PDF Parser cases where it fails; Nov18-Ward-by-Ward.pdf, Ward 17 has a case.
 				const result = new RegExp(/([a-zA-Z' ]*) ([0-9]+)\/([0-9]+) ([0-9.]*\s*)%/).exec(line);
-				if (result.length >= 5) {
+				if (result && result.length >= 5) {
 					returnData.timesCounted = Number(result[2]);
 					returnData.timesCountedPercentage = Number(result[4]);
 				}
@@ -137,12 +139,12 @@ const loadPdfFromArgs = async () => {
 
 const splitWardFile = async () => {
 	const parsedFile = await loadPdfFromArgs();
+	const returnData = {};
 	if (!parsedFile) {
 		console.log("no parsed file");
 		return;
 	}	
-	for (let i = 1; i <= NUM_OF_WARDS ; i++) {
-		console.log(`Ward ${i}`);
+	for (let i = 1; i <= NUM_OF_WARDS; i++) {
 		// Find the first instance of the string "WARD ${i}"
 		const currentWardStart = parsedFile.findIndex((line) => line.includes(`WARD ${i}`));
 		let nextWardStart = parsedFile.length;
@@ -153,15 +155,32 @@ const splitWardFile = async () => {
 			}
 		}
 		if (currentWardStart >= 0) {
-			console.log("Current Ward Start", currentWardStart);
-			console.log("Next Ward Start", nextWardStart+3);
 			const wardResults = parsedFile.splice(currentWardStart-4, nextWardStart);
-			console.log(wardResults[wardResults.length-1]);
+			const parsedWardResults = parseResults(wardResults);
+			returnData[i.toString()] = parsedWardResults;
 		} else {
 			console.log("NO WARD FOUND");
 		}
 	}
+	console.log(JSON.stringify(returnData));
 }
+
+const parseResults = (splicedFile) => {
+	const returnData = parseHeaderData(splicedFile.slice(0, 10));
+	const noHeaderFile = removeHeaders(splicedFile);
+	const fileRaces = findRaces(noHeaderFile);
+	const raceData = {};
+	for (let i = 0; i < fileRaces.length; i++) {
+		if (i + 1 >= fileRaces.length) {
+			raceData[fileRaces[i]] = parseRace(noHeaderFile, fileRaces[i], false);
+		} else {
+			raceData[fileRaces[i]] = parseRace(noHeaderFile, fileRaces[i], fileRaces[i + 1]);
+		}
+	}
+	returnData.results = raceData;
+	return returnData;
+}
+
 
 const processFile = async () => {
 	const parsedFile = loadPdfFromArgs();

@@ -1,6 +1,6 @@
 const { loadAndParsePDF } = require("./parser");
 
-const NUM_OF_WARDS = 28
+const NUM_OF_WARDS = 28;
 
 const parseSubHeader = (rawSubHeader, dataOrder) => {
 	const subHeaderData = {};
@@ -18,7 +18,7 @@ const parseSubHeader = (rawSubHeader, dataOrder) => {
 
 /**
  * Takes in the main header data and returns the data in a useable form.
- * @param headerData string[] The first 10 elements of the parsed PDF, which contain the header info.
+ * @param rawHeaderData string[] The first 10 elements of the parsed PDF, which contain the header info.
  * @return object An object containing info about the given PDF file.
  */
 const parseHeaderData = (rawHeaderData) => {
@@ -55,25 +55,25 @@ const removeHeaders = (parsedFile) => {
 	return parsedFile;
 };
 
-const findRaces = (splitFile) => {
-	const fileRaces = [];
+const findContests = (splitFile) => {
+	const fileContests = [];
 	// TODO: change this character based on OS (Windows should look for \r\n)
-	const findRace = /^([a-zA-Z.]{2,})(\s[A-Z0-9]*[^a-z])*$/;
+	const findContest = /^([a-zA-Z.]{2,})(\s[A-Z0-9]*[^a-z])*$/;
 	splitFile.forEach((line) => {
-		const searchResults = findRace.exec(line);
+		const searchResults = findContest.exec(line);
 		if (!searchResults) return;
 		if (searchResults[0].includes("Total")) return;
-		fileRaces.push(searchResults[0]);
+		fileContests.push(searchResults[0]);
 	});
-	return fileRaces;
+	return fileContests;
 };
 
-const parseRace = (splitFile, targetRace, nextRace) => {
+const parseContest = (splitFile, targetContest, nextContest) => {
 	let bodyToParse = [];
 	// the first two lines are the current race and the string "Total" - remove these before doing anything else
 	splitFile.splice(0, 2);
-	let endIndex = splitFile.indexOf(nextRace, 1);
-	if (!nextRace) {
+	let endIndex = splitFile.indexOf(nextContest, 1);
+	if (!nextContest) {
 		endIndex = splitFile.length;
 	}
 	if (endIndex >= 0) {
@@ -135,7 +135,7 @@ const loadPdfFromArgs = async () => {
 	}
 	const parsedFile = await loadAndParsePDF(fileName);
 	return parsedFile;
-}
+};
 
 const splitWardFile = async () => {
 	const parsedFile = await loadPdfFromArgs();
@@ -143,19 +143,19 @@ const splitWardFile = async () => {
 	if (!parsedFile) {
 		console.log("no parsed file");
 		return;
-	}	
+	}
 	for (let i = 1; i <= NUM_OF_WARDS; i++) {
 		// Find the first instance of the string "WARD ${i}"
 		const currentWardStart = parsedFile.findIndex((line) => line.includes(`WARD ${i}`));
 		let nextWardStart = parsedFile.length;
 		if (i + 1 <= NUM_OF_WARDS) {
-			nextWardStart = parsedFile.findIndex((line) => line.includes(`WARD ${i+1}`)) - 4;
+			nextWardStart = parsedFile.findIndex((line) => line.includes(`WARD ${i + 1}`)) - 4;
 			if (nextWardStart < 0) {
 				throw new Error("COULDN'T FIND NEXT WARD");
 			}
 		}
 		if (currentWardStart >= 0) {
-			const wardResults = parsedFile.splice(currentWardStart-4, nextWardStart);
+			const wardResults = parsedFile.splice(currentWardStart - 4, nextWardStart);
 			const parsedWardResults = parseResults(wardResults);
 			returnData[i.toString()] = parsedWardResults;
 		} else {
@@ -163,24 +163,23 @@ const splitWardFile = async () => {
 		}
 	}
 	console.log(JSON.stringify(returnData));
-}
+};
 
 const parseResults = (splicedFile) => {
 	const returnData = parseHeaderData(splicedFile.slice(0, 10));
 	const noHeaderFile = removeHeaders(splicedFile);
-	const fileRaces = findRaces(noHeaderFile);
+	const fileContests = findContests(noHeaderFile);
 	const raceData = {};
-	for (let i = 0; i < fileRaces.length; i++) {
-		if (i + 1 >= fileRaces.length) {
-			raceData[fileRaces[i]] = parseRace(noHeaderFile, fileRaces[i], false);
+	for (let i = 0; i < fileContests.length; i++) {
+		if (i + 1 >= fileContests.length) {
+			raceData[fileContests[i]] = parseContest(noHeaderFile, fileContests[i], false);
 		} else {
-			raceData[fileRaces[i]] = parseRace(noHeaderFile, fileRaces[i], fileRaces[i + 1]);
+			raceData[fileContests[i]] = parseContest(noHeaderFile, fileContests[i], fileContests[i + 1]);
 		}
 	}
 	returnData.results = raceData;
 	return returnData;
-}
-
+};
 
 const processFile = async () => {
 	const parsedFile = loadPdfFromArgs();
@@ -190,13 +189,13 @@ const processFile = async () => {
 	// The first 10 lines are the main header
 	const headerData = parseHeaderData(parsedFile.slice(0, 10));
 	const noHeaderFile = removeHeaders(parsedFile);
-	const fileRaces = findRaces(noHeaderFile);
+	const fileContests = findContests(noHeaderFile);
 	const raceData = {};
-	for (let i = 0; i < fileRaces.length; i++) {
-		if (i + 1 >= fileRaces.length) {
-			raceData[fileRaces[i]] = parseRace(noHeaderFile, fileRaces[i], false);
+	for (let i = 0; i < fileContests.length; i++) {
+		if (i + 1 >= fileContests.length) {
+			raceData[fileContests[i]] = parseContest(noHeaderFile, fileContests[i], false);
 		} else {
-			raceData[fileRaces[i]] = parseRace(noHeaderFile, fileRaces[i], fileRaces[i + 1]);
+			raceData[fileContests[i]] = parseContest(noHeaderFile, fileContests[i], fileContests[i + 1]);
 		}
 	}
 	headerData.results = raceData;

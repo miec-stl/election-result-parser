@@ -116,7 +116,7 @@ const parseContest = (splitFile, targetContest, nextContest) => {
 		const parsedLine = line.replace("\\", "");
 		const result = new RegExp(/([-a-zA-Z' ]*) ([0-9]*) ([0-9.]*)%/).exec(parsedLine);
 		if (result && result.length >= 4) {
-			candidateData.numVotes = result[2];
+			candidateData.numVotes = parseInt(result[2], 10);
 			candidateData.percentageVotes = result[3];
 			returnData.results[result[1]] = candidateData;
 			if (result[1] !== "Write-in Votes") {
@@ -172,7 +172,34 @@ const splitWardFile = async () => {
 			console.log("NO WARD FOUND");
 		}
 	}
+	for (const [key, data] of Object.entries(returnData)) {
+		const wardData = returnData[key];
+		const combinedData = combineWardResults(data);
+		returnData[key] = { ...wardData, ...combinedData };
+	}
 	console.log(JSON.stringify(returnData));
+};
+
+const combineWardResults = (contestData) => {
+	const returnData = {
+		results: {},
+		totalVotes: 0
+	};
+	for (const [key, data] of Object.entries(contestData)) {
+		if (key === "candidates") {
+			continue;
+		}
+		returnData.totalVotes += data.totalVotes;
+		for (const [candidate, resultData] of Object.entries(data.results)) {
+			if (!(candidate in returnData.results)) {
+				returnData.results[candidate] = {
+					numVotes: 0
+				};
+			}
+			returnData.results[candidate].numVotes += resultData.numVotes;
+		}
+	}
+	return returnData;
 };
 
 const parseResults = (splicedFile) => {

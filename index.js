@@ -139,6 +139,7 @@ const loadPdfFromArgs = async () => {
 
 const splitWardFile = async () => {
 	const parsedFile = await loadPdfFromArgs();
+
 	const returnData = {};
 	if (!parsedFile) {
 		console.log("no parsed file");
@@ -157,7 +158,16 @@ const splitWardFile = async () => {
 		if (currentWardStart >= 0) {
 			const wardResults = parsedFile.splice(currentWardStart - 4, nextWardStart);
 			const parsedWardResults = parseResults(wardResults);
-			returnData[i.toString()] = parsedWardResults;
+			for (const [key, data] of Object.entries(parsedWardResults.results)) {
+				if (!(key in returnData)) {
+					returnData[key] = {
+						candidates: data.candidates
+					};
+				}
+				// TODO: this is really dumb and i should make a better way of handling this
+				delete data.candidates;
+				returnData[key][i.toString()] = data;
+			}
 		} else {
 			console.log("NO WARD FOUND");
 		}
@@ -181,26 +191,4 @@ const parseResults = (splicedFile) => {
 	return returnData;
 };
 
-const processFile = async () => {
-	const parsedFile = loadPdfFromArgs();
-	if (!parsedFile) {
-		return;
-	}
-	// The first 10 lines are the main header
-	const headerData = parseHeaderData(parsedFile.slice(0, 10));
-	const noHeaderFile = removeHeaders(parsedFile);
-	const fileContests = findContests(noHeaderFile);
-	const raceData = {};
-	for (let i = 0; i < fileContests.length; i++) {
-		if (i + 1 >= fileContests.length) {
-			raceData[fileContests[i]] = parseContest(noHeaderFile, fileContests[i], false);
-		} else {
-			raceData[fileContests[i]] = parseContest(noHeaderFile, fileContests[i], fileContests[i + 1]);
-		}
-	}
-	headerData.results = raceData;
-	console.log(JSON.stringify(headerData));
-};
-
-//processFile();
 splitWardFile();

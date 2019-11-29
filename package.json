@@ -1,11 +1,16 @@
 {
-  "name": "election-result-parser",
-  "version": "1.0.0",
-  "main": "index.js",
-  "repository": "https://github.com/miec-stl/election-result-parser",
-  "license": "MIT",
-  "dependencies": {
-    "pdf-parse": "gitlab:renodubois/pdf-parse",
-    "pdfjs-dist": "^2.0.943"
-  }
+	"name": "election-result-parser",
+	"version": "1.0.0",
+	"main": "index.js",
+	"repository": "https://github.com/miec-stl/election-result-parser",
+	"license": "MIT",
+	"dependencies": {
+		"@types/node": "^12.12.14",
+		"pdf-parse": "gitlab:renodubois/pdf-parse",
+		"pdfjs-dist": "^2.0.943",
+		"typescript": "^3.7.2"
+	},
+	"scripts": {
+		"build": "tsc"
+	}
 }

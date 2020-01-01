@@ -9,7 +9,7 @@
 		"moduleResolution": "node",
 		"baseUrl": ".",
 		"paths": {
-			"*": ["node_modules/*", ""]
+			"*": ["node_modules/*", "src/types.ts"]
 		},
 		"esModuleInterop": true,
 		"resolveJsonModule": true

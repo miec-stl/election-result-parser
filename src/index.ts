@@ -1,14 +1,5 @@
 import { loadAndParsePDF } from "./parser";
-import {
-	ReturnData,
-	ContestResultsCollection,
-	ContestResult,
-	OptionData,
-	OptionDataCollection,
-	WardResultsCollection,
-	ParsedWardResults
-} from "./types";
-import { parse } from "path";
+import { ContestResult, OptionData, ParsedWardResults, ReturnData } from "./types";
 
 const NUM_OF_WARDS = 28;
 

@@ -5,8 +5,8 @@ import pdf from "pdf-parse";
 interface PdfParseReturnData {
 	info: any;
 	metadata: any;
-	numpages: Number;
-	numrender: Number;
+	numpages: number;
+	numrender: number;
 	text: string;
 	version: string;
 }

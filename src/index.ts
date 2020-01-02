@@ -1,5 +1,13 @@
 import { loadAndParsePDF } from "./parser";
-import { ContestResult, OptionData, ParsedWardResults, ReturnData } from "./types";
+import {
+	ContestResult,
+	OptionData,
+	ParsedWardResults,
+	ReturnData,
+	ContestResultsCollection,
+	OptionDataCollection
+} from "./types";
+import { round } from "./utils";
 
 const NUM_OF_WARDS = 28;
 
@@ -87,6 +95,7 @@ const parseContest = (splitFile: string[], targetContest: string, nextContest: s
 	// Now, on to the parsing
 	// The first 4 lines contain info about total votes and such, and they're always the same
 	const returnData: ContestResult = {
+		totalVotes: 0,
 		candidates: [],
 		results: {},
 		wardResults: {}
@@ -130,27 +139,37 @@ const loadPdfFromArgs = async () => {
 	return parsedFile;
 };
 
-// const combineWardResults = (contestData) => {
-// 	const returnData = {
-// 		results: {},
-// 		totalVotes: 0
-// 	};
-// 	for (const [key, data] of Object.entries(contestData)) {
-// 		if (key === "candidates") {
-// 			continue;
-// 		}
-// 		returnData.totalVotes += data.totalVotes;
-// 		for (const [candidate, resultData] of Object.entries(data.results)) {
-// 			if (!(candidate in returnData.results)) {
-// 				returnData.results[candidate] = {
-// 					numVotes: 0
-// 				};
-// 			}
-// 			returnData.results[candidate].numVotes += resultData.numVotes;
-// 		}
-// 	}
-// 	return returnData;
-// };
+const createTotalResultsForContest = (contestResult: ContestResult) => {
+	let totalVotes = 0;
+	const totalResults: OptionDataCollection = {};
+	for (const wardNumber in contestResult.wardResults) {
+		const data = contestResult.wardResults[wardNumber];
+		for (const option in data) {
+			const optionData = data[option];
+			totalVotes += optionData.numVotes;
+			if (option in totalResults) {
+				totalResults[option].numVotes += optionData.numVotes;
+			} else {
+				totalResults[option] = {
+					numVotes: optionData.numVotes,
+					// TODO: Loop through after we've made the totalResults object, and calc the percentage. There's a round function in utils.ts that should help w/ this
+					percentageVotes: ""
+				};
+			}
+		}
+	}
+	for (const result in totalResults) {
+		const resultData = totalResults[result];
+		let percentage = round((resultData.numVotes / totalVotes) * 100, 2).toString();
+		if (percentage.indexOf(".") < 0) {
+			percentage = `${percentage}.00`;
+		}
+		totalResults[result].percentageVotes = percentage;
+	}
+	contestResult.totalVotes = totalVotes;
+	contestResult.results = totalResults;
+	return contestResult;
+};
 
 const parseWardResults = (splicedFile: string[]) => {
 	const returnData: ParsedWardResults = {};
@@ -194,6 +213,7 @@ const splitWardFile = async () => {
 				const contestResults = parsedWardResults[contest];
 				if (!(contest in returnData.results)) {
 					returnData.results[contest] = {
+						totalVotes: 0,
 						candidates: [...contestResults.candidates],
 						results: {},
 						wardResults: {}
@@ -205,11 +225,11 @@ const splitWardFile = async () => {
 			console.log("NO WARD FOUND");
 		}
 	}
-	// for (const [key, data] of Object.entries(returnData)) {
-	// 	const contestData = returnData[key];
-	// 	const combinedData = combineWardResults(data);
-	// 	returnData[key] = { ...combinedData, ...contestData };
-	// }
+	for (const contest in returnData.results) {
+		const data = returnData.results[contest];
+		const combinedData = createTotalResultsForContest(data);
+		returnData.results[contest] = combinedData;
+	}
 	console.log(JSON.stringify(returnData));
 };
 

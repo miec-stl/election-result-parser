@@ -3,11 +3,11 @@ export interface ReturnData {
 	results: ContestResultsCollection;
 }
 
-interface ContestResultsCollection {
+export interface ContestResultsCollection {
 	[contestName: string]: ContestResult;
 }
 
-interface OptionDataCollection {
+export interface OptionDataCollection {
 	[optionName: string]: OptionData;
 }
 
@@ -16,7 +16,7 @@ interface WardResultsCollection {
 }
 
 export interface ContestResult {
-	totalVotes?: number;
+	totalVotes: number;
 	timesCounted?: number;
 	timesCountedPercentage?: string;
 	candidates: string[];
